@@ -20,16 +20,13 @@ class SegmentationDataset(Dataset):
         self.samples = samples
         self.transform = transform
 
-        if length is None:
-            self.length = len(self.samples)
-        else:
-            self.length = length
+        self.length = len(self.samples) if length is None else length
 
     def __len__(self) -> int:
         return self.length
 
     def __getitem__(self, idx: int) -> Dict[str, Any]:
-        idx = idx % len(self.samples)
+        idx %= len(self.samples)
 
         image_path, mask_path = self.samples[idx]
 

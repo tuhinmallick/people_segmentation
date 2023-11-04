@@ -13,6 +13,4 @@ def binary_mean_iou(logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor
 
     union = targets.sum() + output.sum() - intersection
 
-    result = (intersection + EPSILON) / (union + EPSILON)
-
-    return result
+    return (intersection + EPSILON) / (union + EPSILON)

@@ -95,20 +95,17 @@ class SegmentPeople(pl.LightningModule):
     def val_dataloader(self):
         val_aug = from_dict(self.hparams["val_aug"])
 
-        result = []
-
-        for val_samples in self.val_samples:
-            result += [
-                DataLoader(
-                    SegmentationDataset(val_samples, val_aug, length=None),
-                    batch_size=self.hparams["val_parameters"]["batch_size"],
-                    num_workers=self.hparams["num_workers"],
-                    shuffle=False,
-                    pin_memory=True,
-                    drop_last=False,
-                )
-            ]
-        return result
+        return [
+            DataLoader(
+                SegmentationDataset(val_samples, val_aug, length=None),
+                batch_size=self.hparams["val_parameters"]["batch_size"],
+                num_workers=self.hparams["num_workers"],
+                shuffle=False,
+                pin_memory=True,
+                drop_last=False,
+            )
+            for val_samples in self.val_samples
+        ]
 
     def configure_optimizers(self):
         optimizer = object_from_dict(
@@ -150,10 +147,10 @@ class SegmentPeople(pl.LightningModule):
 
         logits = self.forward(features)
 
-        result = {}
-        for loss_name, _, loss in self.losses:
-            result[f"val_mask_{loss_name}"] = loss(logits, masks)
-
+        result = {
+            f"val_mask_{loss_name}": loss(logits, masks)
+            for loss_name, _, loss in self.losses
+        }
         dataset_type = self.val_dataset_names[dataloader_idx]
 
         result[f"{dataset_type}_val_iou"] = binary_mean_iou(logits, masks)

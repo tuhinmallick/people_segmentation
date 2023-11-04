@@ -97,7 +97,7 @@ def main():
     file_paths = []
 
     for regexp in ["*.jpg", "*.png", "*.jpeg", "*.JPG"]:
-        file_paths += sorted([x for x in tqdm(args.input_path.rglob(regexp))])
+        file_paths += sorted(list(tqdm(args.input_path.rglob(regexp))))
 
     dataset = InferenceDataset(file_paths, transform=from_dict(hparams["test_aug"]))
 
@@ -119,11 +119,7 @@ def main():
 def predict(dataloader, model, hparams, device):
     model.eval()
 
-    if hparams["local_rank"] == 0:
-        loader = tqdm(dataloader)
-    else:
-        loader = dataloader
-
+    loader = tqdm(dataloader) if hparams["local_rank"] == 0 else dataloader
     with torch.no_grad():
         for batch in loader:
             torched_images = batch["torched_image"]  # images that are rescaled and padded
